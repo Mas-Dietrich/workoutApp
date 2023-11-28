@@ -109,6 +109,13 @@ textarea {
     background-color: #216795;
 }
 
+.card.completed {
+    background-color: #27ae60;
+}
+
+.card.rest {
+    background-color: #b9a49a;
+}
 
 footer {
   display: flex;

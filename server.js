@@ -38,7 +38,20 @@ app.get("/quotes", (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
       });
   });
-  
+
+//Store completed workout days
+
+//API call for chest workouts
+
+//API call for biceps workouts
+
+//API call for glutes workouts
+
+//API call for middle back workouts
+
+//API call for ab workouts
+
+//Users workout notes are saved when they input them
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);

@@ -40,6 +40,10 @@ body {
   text-align: center;
 }
 
+main {
+    padding-top: 25px;
+}
+
 main .workout-container{
   margin-top: 10px;
   display: flex;
@@ -52,10 +56,15 @@ main .workout-container{
   flex: 1;
   max-width: 300px;
   padding: 20px;
-  margin: 10px;
+  margin: 20px;
   border: 1px solid #2c2c2c;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: scale(1.2);
 }
 
 table {

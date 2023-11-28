@@ -40,7 +40,7 @@ body {
   text-align: center;
 }
 
-main {
+main .workout-container{
   margin-top: 10px;
   display: flex;
   flex-wrap: wrap;

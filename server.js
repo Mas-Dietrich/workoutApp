@@ -122,7 +122,7 @@ app.put('/workouts/:day', (req, res) => {
         // Update exercises, completed status, and rest day status
         workouts[dayIndex].exercises = exercises || [];
         workouts[dayIndex].completed = completed !== undefined ? completed : false;
-        workouts[dayIndex].isRestDay = isRestDay !== undefined ? isRestDay : false;
+        workouts[dayIndex].rest = rest !== undefined ? rest : false;
 
         res.json({success: true, message: `Workout for ${day} updated successfully`});
     } else {

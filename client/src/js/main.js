@@ -37,6 +37,11 @@ document.addEventListener("DOMContentLoaded", function() {
             if (dayData.completed) {
                 card.classList.add('completed')
             }
+
+            //toggle rest day status on workout days
+            if (dayData.rest) {
+                card.classList.add('rest')
+            }
         })
         completedWorkoutsCount();
     })
@@ -71,9 +76,14 @@ document.addEventListener("DOMContentLoaded", function() {
         //Complete workout button, rest day button, and add workout button
         const completeButton = createButton("completeWorkout", "check")
         //Event listener for completeButton
-        completeButton.addEventListener('click', ()=> toggleCompletedStatus(dayData))
+        completeButton.addEventListener('click', ()=> toggleCompletedStatus(card, dayData))
+
         const restDayButton = createButton("restDay", "bed")
+        //Event listener for restDayButton
+        restDayButton.addEventListener('click', ()=> toggleRestStatus(card, dayData))
+
         const addWorkoutButton = createButton("addWorkout", "plus")
+        //Event listener for addWorkoutButton
 
         card.appendChild(completeButton)
         card.appendChild(restDayButton)
@@ -132,27 +142,39 @@ document.addEventListener("DOMContentLoaded", function() {
         completedWorkoutsTracker.textContent = `${completedWorkouts} / 7 Workouts Complete`
     }
 
+    function toggleRestStatus(card, dayData) {
+        dayData.rest = !dayData.rest;
+        updateServer(dayData)
+
+        card.classList.toggle('rest', dayData.rest)
+    }
+
+
     //User can toggle whether or not they completed the workout for that day
-    function toggleCompletedStatus(dayData) {
+    function toggleCompletedStatus(card, dayData) {
         dayData.completed = !dayData.completed;
+        updateServer(dayData)
         completedWorkoutsCount();
+
+        card.classList.toggle('completed', dayData.completed)
     }
 });
 
-/* //Users can toggle whether or not they completed the workout for that day
-let completeWorkout = document.querySelector('.completeWorkout')
+//Function to PUT changes from client side to server side
+function updateServer(dayData) {
+    const options = {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(dayData),
+    };
 
-completeWorkout.addEventListener('click', () => {
-    const card = document.querySelector('.card')
+    fetch(`/workouts/${dayData.day}`, options)
+      .then(response => response.json())
+      .catch(error => {
+        console.error('Error updating workout on server:', error);
+      });
+  }
 
-    card.classList.toggle('completed')
-})
 
-//Users can toggle whether or not a day was a rest day
-let restDay = document.querySelector('.restDay')
-
-restDay.addEventListener('click', () => {
-    const card = document.querySelector('.card')
-
-    card.classList.toggle('rest')
-}) */

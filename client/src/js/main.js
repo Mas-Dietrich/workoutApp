@@ -20,14 +20,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
 //Dynamically display workout data from server.js
 document.addEventListener("DOMContentLoaded", function() {
+    let workouts;
+
     const workoutTablesContainer = document.getElementById('workoutTables')
+    const completedWorkoutsTracker = document.getElementById('completedWorkouts')
     fetch('/workouts')
     .then(response => response.json())
-    .then(workouts => {
+    .then(data => {
+        workouts = data;
+
         workouts.forEach((dayData) => {
             const card = createCard(dayData);
-            workoutTablesContainer.appendChild(card);
+            workoutTablesContainer.appendChild(card)
+
+            //toggle completed status for completed workout days
+            if (dayData.completed) {
+                card.classList.add('completed')
+            }
         })
+        completedWorkoutsCount();
     })
     .catch(error => {
         console.error('Error fetching workout data: ', error);
@@ -59,6 +70,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
         //Complete workout button, rest day button, and add workout button
         const completeButton = createButton("completeWorkout", "check")
+        //Event listener for completeButton
+        completeButton.addEventListener('click', ()=> toggleCompletedStatus(dayData))
         const restDayButton = createButton("restDay", "bed")
         const addWorkoutButton = createButton("addWorkout", "plus")
 
@@ -112,6 +125,18 @@ document.addEventListener("DOMContentLoaded", function() {
         return button;
 
     }
+
+    //Function to update number of completed workouts
+    function completedWorkoutsCount() {
+        const completedWorkouts = workouts.filter(day => day.completed).length;
+        completedWorkoutsTracker.textContent = `${completedWorkouts} / 7 Workouts Complete`
+    }
+
+    //User can toggle whether or not they completed the workout for that day
+    function toggleCompletedStatus(dayData) {
+        dayData.completed = !dayData.completed;
+        completedWorkoutsCount();
+    }
 });
 
 /* //Users can toggle whether or not they completed the workout for that day
@@ -131,6 +156,3 @@ restDay.addEventListener('click', () => {
 
     card.classList.toggle('rest')
 }) */
-
-//Progress tracker for days of the week completed out of 7 in the footer that dynamically updates
-let progressTracker = document.querySelector('.progress')

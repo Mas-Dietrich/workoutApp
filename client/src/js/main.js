@@ -109,11 +109,14 @@ document.addEventListener("DOMContentLoaded", function() {
         table.appendChild(thead)
 
         const tbody = document.createElement('tbody');
-        dayData.exercises.forEach((exercise) => {
+        dayData.exercises.forEach((exercise, rowIndex) => {
             const row = document.createElement('tr');
-            ['exercise', 'weight', 'reps', 'sets'].forEach((prop) => {
+            ['exercise', 'weight', 'reps', 'sets'].forEach((prop, colIndex) => {
                 const td = document.createElement('td')
-                td.textContent = exercise[prop];
+                const cellText = exercise[prop]
+                td.textContent = cellText;
+                td.contentEditable = true;
+                td.addEventListener('click', () => handleCellEdit(td, dayData, rowIndex, colIndex));
                 row.appendChild(td)
             });
             tbody.appendChild(row)
@@ -121,6 +124,59 @@ document.addEventListener("DOMContentLoaded", function() {
         table.appendChild(tbody)
 
         return table;
+    }
+
+    //Function for editing workout data
+    function handleCellEdit(cell, dayData, rowIndex, colIndex) {
+        if (document.querySelector('.editing')) {
+            return;
+        }
+        cell.classList.add('editing')
+
+        const originalContent = cell.textContent
+
+        //listeners for editing
+        cell.addEventListener('keydown', (event) => handleCellKeyDown(event, cell, dayData, rowIndex, colIndex, originalContent))
+        cell.addEventListener('blur', () => handleCellBlur(cell, dayData, rowIndex, colIndex, originalContent))
+    }
+
+    //Handle editing, if a user enters, it will update, if they hit escape it will cancel editing
+    function handleCellKeyDown(event, cell, dayData, rowIndex, colIndex, originalContent) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            cell.blur()
+        } else if (event.key === 'Escape'){
+            cell.textContent = originalContent;
+            cell.blur()
+        } else if (isNumericColumn(colIndex) && !isValidInput(event.key, event.ctrlKey, event.metaKey)) {
+        event.preventDefault();
+        }
+    }
+
+    //Handle editing, if new content is actually new, update the server data
+    function handleCellBlur(cell, dayData, rowIndex, colIndex, originalContent) {
+        cell.classList.remove('editing')
+    
+        const newContent = cell.textContent
+        if (newContent !== originalContent) {
+            // Only update if the content has changed
+            dayData.exercises[rowIndex][Object.keys(dayData.exercises[rowIndex])[colIndex]] = newContent;
+    
+            updateServer(dayData)
+        } else {
+            // Restore original content if the content is the same
+            cell.textContent = originalContent;
+        }
+    }
+
+    //Function to check if user is editing a weight, rep or sets column
+    function isNumericColumn(colIndex) {
+        return colIndex === 1 || colIndex === 2 || colIndex === 3
+    }
+
+    //Function for making sure only num is used in updating weight, reps and sets data
+    function isValidInput(key, ctrlKey, metaKey) {
+        return (key.length === 1 && (key >= '0' && key <= '9')) || ctrlKey || metaKey;
     }
 
     //Function to create buttons for the cards

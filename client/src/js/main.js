@@ -176,7 +176,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
     //Function for making sure only num is used in updating weight, reps and sets data
     function isValidInput(key, ctrlKey, metaKey) {
-        return (key.length === 1 && (key >= '0' && key <= '9')) || ctrlKey || metaKey;
+        // Allow backspace, delete, and empty content
+        return (
+            (key.length === 1 && ((key >= '0' && key <= '9') || key === '')) ||
+            key === 'Backspace' ||
+            key === 'Delete' ||
+            ctrlKey ||
+            metaKey
+        );
     }
 
     //Function to create buttons for the cards

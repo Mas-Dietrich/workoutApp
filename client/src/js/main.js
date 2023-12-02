@@ -63,15 +63,31 @@ document.addEventListener("DOMContentLoaded", function() {
         const table = createTable(dayData)
         card.appendChild(table)
 
-        //Note taking textarea
+        //Note taking textarea, once done taking note, user hits save, it will add notes to server and append notes to workout card
         const workoutNotes = document.createElement('textarea')
         workoutNotes.id = "notes";
         workoutNotes.name = "notes";
         workoutNotes.rows = "4";
         workoutNotes.cols = "30";
         workoutNotes.placeholder = "Your Notes Here...";
+        workoutNotes.value = dayData.notes.join('/n');
+
+        const saveNotesButton = createButton("saveNotes", "save");
+        saveNotesButton.addEventListener('click', () => saveNotes(workoutNotes.value, dayData, notesList))
+        card.appendChild(workoutNotes)
+
+        const notesList = document.createElement('ul');
+        dayData.notes.forEach((note) => {
+            const listItem = document.createElement('li')
+            listItem.textContent = note;
+            notesList.appendChild(listItem)
+        })
+
+        workoutNotes.addEventListener('blur', () => updateNotesList(notesList, dayData))
 
         card.appendChild(workoutNotes)
+        card.appendChild(saveNotesButton);
+        card.appendChild(notesList)
 
         //Complete workout button, rest day button, and add workout button
         const completeButton = createButton("completeWorkout", "check")
@@ -92,6 +108,7 @@ document.addEventListener("DOMContentLoaded", function() {
         return card;
 
     }
+
 
     //function to create Data Table and keep styling from static iteration of app
     function createTable(dayData) {
@@ -241,3 +258,20 @@ function updateServer(dayData) {
   }
 
 
+  //Function so user can saves notes for their workout
+  function saveNotes(notes, dayData, notesList) {
+    dayData.notes = notes.split('\n')
+    updateServer(dayData);
+    updateNotesList(notesList, dayData)
+  }
+
+  //Function for updating bullet list
+  function updateNotesList(list, dayData) {
+    list.innerHTML = '';
+
+    dayData.notes.forEach((note, index) => {
+        const listItem = document.createElement('li')
+        listItem.textContent = note
+        list.appendChild(listItem)
+    })
+  }

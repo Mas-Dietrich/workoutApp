@@ -51,6 +51,7 @@ let workouts = [
         ],
         completed: true,
         rest: false,
+        notes: [],
     },
 
     //Tuesday
@@ -62,6 +63,7 @@ let workouts = [
         ],
         completed: false,
         rest: false,
+        notes: [],
     },
 
     //Wednesday
@@ -70,6 +72,7 @@ let workouts = [
         exercises: [],
         completed: false,
         rest: true,
+        notes: [],
     },
 
     //Thursday
@@ -78,6 +81,7 @@ let workouts = [
         exercises: [],
         completed: false,
         rest: false,
+        notes: [],
     },
 
     //Friday
@@ -86,6 +90,7 @@ let workouts = [
         exercises: [],
         completed: false,
         rest: false,
+        notes: [],
     },
 
     //Saturday
@@ -94,6 +99,7 @@ let workouts = [
         exercises: [],
         completed: false,
         rest: false,
+        notes: [],
     },
 
     //Sunday
@@ -102,6 +108,7 @@ let workouts = [
         exercises: [],
         completed: false,
         rest: true,
+        notes: [],
     },
     
 ]
@@ -114,7 +121,7 @@ app.get('/workouts', (req, res) => {
 //route for updating workout data for a specific day
 app.put('/workouts/:day', (req, res) => {
     const day = req.params.day.toLowerCase();
-    const {exercises, completed, rest} = req.body
+    const {exercises, completed, rest, notes} = req.body
 
     const dayIndex = workouts.findIndex((workout) => workout.day === day)
 
@@ -123,6 +130,7 @@ app.put('/workouts/:day', (req, res) => {
         workouts[dayIndex].exercises = exercises || [];
         workouts[dayIndex].completed = completed !== undefined ? completed : false;
         workouts[dayIndex].rest = rest !== undefined ? rest : false;
+        workouts[dayIndex].notes = notes || [];
 
         res.json({success: true, message: `Workout for ${day} updated successfully`});
     } else {

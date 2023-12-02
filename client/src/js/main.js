@@ -260,10 +260,18 @@ function updateServer(dayData) {
 
   //Function so user can saves notes for their workout
   function saveNotes(notes, dayData, notesList) {
-    dayData.notes = notes.split('\n')
+    // Ensure dayData.notes is an array, and concatenate new notes to existing notes
+    dayData.notes = (dayData.notes || []).concat(notes.split('\n'));
+    
+    // Remove any empty strings from the notes array
+    dayData.notes = dayData.notes.filter(note => note.trim() !== '');
+
+    // Update the server with the modified dayData
     updateServer(dayData);
-    updateNotesList(notesList, dayData)
-  }
+
+    // Update the notes list on the UI
+    updateNotesList(notesList, dayData);
+}
 
   //Function for updating bullet list
   function updateNotesList(list, dayData) {

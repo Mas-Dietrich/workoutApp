@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function createCard(dayData) {
         const card = document.createElement('div')
         card.classList.add("card");
+        card.setAttribute('data-day', dayData.day)
 
         //Workout's day of the week
         const heading = document.createElement('h2')
@@ -238,6 +239,110 @@ document.addEventListener("DOMContentLoaded", function() {
 
         card.classList.toggle('completed', dayData.completed)
     }
+
+
+    //Function so user can saves notes for their workout
+    function saveNotes(notes, dayData, notesList) {
+        // Ensure dayData.notes is an array, and concatenate new notes to existing notes
+        dayData.notes = (dayData.notes || []).concat(notes.split('\n'));
+        
+        // Remove any empty strings from the notes array
+        dayData.notes = dayData.notes.filter(note => note.trim() !== '');
+
+        // Update the server with the modified dayData
+        updateServer(dayData);
+
+        // Update the notes list on the UI
+        updateNotesList(notesList, dayData);
+
+        const workoutNotes = document.getElementById('notes')
+        workoutNotes.value = '';
+
+    }
+
+    //Function for updating bullet list
+    function updateNotesList(list, dayData) {
+        list.innerHTML = '';
+
+        dayData.notes.forEach((note, index) => {
+            const listItem = document.createElement('li')
+
+            const editNoteButton = createButton('editNote', 'edit')
+            editNoteButton.addEventListener('click', ()=> editNotes(dayData, index))
+
+            const deleteButton = createButton('deleteNote', 'trash-alt');
+            deleteButton.addEventListener('click', () => deleteNotes(dayData, index))
+
+            listItem.textContent = note
+            listItem.appendChild(editNoteButton)
+            listItem.appendChild(deleteButton)
+            list.appendChild(listItem)
+        })
+    }
+
+    function deleteNotes(dayData, index) {
+        // Remove the note from the array
+        dayData.notes.splice(index, 1);
+      
+        // Update the server with the modified dayData
+        updateServer(dayData);
+      
+        // Re-render the notes list on the UI
+        const notesList = document.createElement('ul');
+        dayData.notes.forEach((note, index) => {
+          const listItem = document.createElement('li');
+          
+          // Create a delete button for each note
+          const deleteButton = createButton("deleteNote", "trash-alt");
+          deleteButton.addEventListener('click', () => deleteNotes(dayData, index));
+          
+          listItem.textContent = note;
+          listItem.appendChild(deleteButton);
+          notesList.appendChild(listItem);
+        });
+      
+        // Update the notes list in the card
+        const card = document.querySelector(`[data-day="${dayData.day}"]`);
+        const oldNotesList = card.querySelector('ul');
+        oldNotesList.replaceWith(notesList);
+      }
+
+      //Function to edit notes
+      function editNotes(dayData, index) {
+        const editedNote = prompt('Edit your note:', dayData.notes[index]);
+      
+        if (editedNote !== null) { // Check if the user pressed cancel
+          // Update the note in the array
+          dayData.notes[index] = editedNote;
+      
+          // Update the server with the modified dayData
+          updateServer(dayData);
+      
+          // Re-render the notes list on the UI
+          const notesList = document.createElement('ul');
+          dayData.notes.forEach((note, index) => {
+            const listItem = document.createElement('li');
+      
+            // Create an edit button for each note
+            const editButton = createButton("editNote", "edit");
+            editButton.addEventListener('click', () => editNotes(dayData, index));
+      
+            // Create a delete button for each note
+            const deleteButton = createButton("deleteNote", "trash-alt");
+            deleteButton.addEventListener('click', () => deleteNotes(dayData, index));
+      
+            listItem.textContent = note;
+            listItem.appendChild(editButton);
+            listItem.appendChild(deleteButton);
+            notesList.appendChild(listItem);
+          });
+      
+          // Update the notes list in the card
+          const card = document.querySelector(`[data-day="${dayData.day}"]`);
+          const oldNotesList = card.querySelector('ul');
+          oldNotesList.replaceWith(notesList);
+        }
+      }
 });
 
 //Function to PUT changes from client side to server side
@@ -257,29 +362,3 @@ function updateServer(dayData) {
       });
   }
 
-
-  //Function so user can saves notes for their workout
-  function saveNotes(notes, dayData, notesList) {
-    // Ensure dayData.notes is an array, and concatenate new notes to existing notes
-    dayData.notes = (dayData.notes || []).concat(notes.split('\n'));
-    
-    // Remove any empty strings from the notes array
-    dayData.notes = dayData.notes.filter(note => note.trim() !== '');
-
-    // Update the server with the modified dayData
-    updateServer(dayData);
-
-    // Update the notes list on the UI
-    updateNotesList(notesList, dayData);
-}
-
-  //Function for updating bullet list
-  function updateNotesList(list, dayData) {
-    list.innerHTML = '';
-
-    dayData.notes.forEach((note, index) => {
-        const listItem = document.createElement('li')
-        listItem.textContent = note
-        list.appendChild(listItem)
-    })
-  }

@@ -77,6 +77,11 @@ document.addEventListener("DOMContentLoaded", function() {
         saveNotesButton.addEventListener('click', () => saveNotes(workoutNotes.value, dayData, notesList))
         card.appendChild(workoutNotes)
 
+        //Workout form for user to fill to add workout to data table
+        const addWorkoutForm = workoutForm(dayData)
+        addWorkoutForm.style.display = 'none'
+        card.appendChild(addWorkoutForm)
+
         const notesList = document.createElement('ul');
         dayData.notes.forEach((note) => {
             const listItem = document.createElement('li')
@@ -101,6 +106,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const addWorkoutButton = createButton("addWorkout", "plus")
         //Event listener for addWorkoutButton
+        addWorkoutButton.addEventListener('click', ()=> toggleWorkoutForm(addWorkoutForm))
 
         card.appendChild(completeButton)
         card.appendChild(restDayButton)
@@ -342,6 +348,77 @@ document.addEventListener("DOMContentLoaded", function() {
           const oldNotesList = card.querySelector('ul');
           oldNotesList.replaceWith(notesList);
         }
+      }
+
+      function workoutForm(dayData) {
+        const form = document.createElement('form')
+        form.classList.add('add-workout-form')
+
+        const nameInput = document.createElement('input')
+        nameInput.type = 'text';
+        nameInput.placeholder = 'Workout';
+        nameInput.name = 'workoutName'
+
+        const weightInput = document.createElement('input')
+        weightInput.type = 'number';
+        weightInput.placeholder = 'Weight'
+        weightInput.name = 'weight'
+
+        const repsInput = document.createElement('input')
+        repsInput.type = 'number';
+        repsInput.placeholder = 'Reps';
+        repsInput.name = 'reps'
+
+        const setsInput = document.createElement('input')
+        setsInput.type = 'number'
+        setsInput.placeholder = 'Sets'
+        setsInput.name = 'sets'
+
+        const submitButton = document.createElement('button')
+        submitButton.type = 'button'
+        submitButton.textContent = 'Add Workout'
+        submitButton.addEventListener('click', () => addWorkout(dayData, nameInput, weightInput, repsInput, setsInput))
+        
+        form.appendChild(nameInput)
+        form.appendChild(weightInput)
+        form.appendChild(repsInput)
+        form.appendChild(setsInput)
+        form.appendChild(submitButton)
+
+        return form;
+      }
+
+      function addWorkout(dayData, nameInput, weightInput, repsInput, setsInput) {
+        const workoutName = nameInput.value.trim();
+        const weight = parseInt(weightInput.value, 10);
+        const reps = parseInt(repsInput.value, 10);
+        const sets = parseInt(setsInput.value, 10);
+
+        if (workoutName && !isNaN(weight) && !isNaN(reps) && !isNaN(sets)) {
+            const newWorkout = {
+                exercise: workoutName,
+                weight: weight,
+                reps: reps,
+                sets: sets,
+            }
+
+            dayData.exercises.push(newWorkout)
+
+            updateServer(dayData)
+
+            // Re-render the exercises table on the UI
+            const workoutTablesContainer = document.getElementById('workoutTables');
+            const card = document.querySelector(`[data-day="${dayData.day}"]`);
+            const oldTable = card.querySelector('.workout-table');
+            const newTable = createTable(dayData);
+            oldTable.replaceWith(newTable);
+        } else {
+            alert('Invalid Workout Data. Please Try Again.')
+        }
+      }
+
+      function toggleWorkoutForm(form) {
+        form.style.display = form.style.display === 'none' ? 'block' : 'none'
       }
 });
 

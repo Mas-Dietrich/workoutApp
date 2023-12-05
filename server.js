@@ -138,17 +138,31 @@ app.put('/workouts/:day', (req, res) => {
     }
 })
 
-//API call for chest workouts
+//API Call for exercises for users to add to workout plan
+app.get('/exercises', async(req, res) => {
+    const muscle = req.query.muscle;
 
-//API call for biceps workouts
+    if (!muscle) {
+        return res.status(400).json({error: "Muscle parameter is required"})
+    }
+    const options = {
+        method: "GET",
+        headers: {"x-api-key": "2LP0z26UuHCOic1ZWZ/x5w==7WiMg5Quumm85tl6"},
+    }
+    const url = `https://api.api-ninjas.com/v1/exercises?muscle=${muscle}`
 
-//API call for glutes workouts
+    try {
+        const response = await fetch(url, options);
+        const data = await response.json();
 
-//API call for middle back workouts
+        console.log("Exercise Data:", data)
 
-//API call for ab workouts
-
-//Users workout notes are saved when they input them
+        res.json(data);
+    } catch(error) {
+        console.log(`Error: ${Error}`);
+        res.status(500).json({error: "Internal Server Error"})
+    }
+})
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);

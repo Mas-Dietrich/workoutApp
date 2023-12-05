@@ -439,3 +439,16 @@ function updateServer(dayData) {
       });
   }
 
+//Function to fetch exercises from exercise API
+async function fetchExercises(muscle) {
+    try {
+        const response = await fetch(`/exercises?muscle=${muscle}`)
+        const data = await response.json()
+
+        console.log("Exercises:", data)
+    } catch(error) {
+        console.error("Error fetching exercises:", error)
+    }
+}
+
+fetchExercises("abdominals")

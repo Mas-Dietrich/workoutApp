@@ -378,12 +378,18 @@ document.addEventListener("DOMContentLoaded", function() {
         submitButton.type = 'button'
         submitButton.textContent = 'Add Workout'
         submitButton.addEventListener('click', () => addWorkout(dayData, nameInput, weightInput, repsInput, setsInput))
+
+        //Button for user to select a workout from the API instead
+        const chooseWorkoutButton = document.createElement('button')
+        chooseWorkoutButton.type = 'button'
+        chooseWorkoutButton.textContent = "Choose a Workout";
         
         form.appendChild(nameInput)
         form.appendChild(weightInput)
         form.appendChild(repsInput)
         form.appendChild(setsInput)
         form.appendChild(submitButton)
+        form.appendChild(chooseWorkoutButton)
 
         return form;
       }
@@ -420,6 +426,13 @@ document.addEventListener("DOMContentLoaded", function() {
       function toggleWorkoutForm(form) {
         form.style.display = form.style.display === 'none' ? 'block' : 'none'
       }
+
+      //Function to make a workout form with data from the workout API
+      //When chooseWorkoutsButton is chosen, toggle to hide the form to add own workout
+      //Categories populated from API: abdominals, biceps, chest, Lower Back (lower_back)
+      //When a user selects a category, populate workout options for that category
+      //User selects a workout and clicks add workout and it adds workout to data table with default weight, reps and sets values
+      //Toggles away the add workout fields
 });
 
 //Function to PUT changes from client side to server side

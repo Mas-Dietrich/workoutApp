@@ -379,10 +379,10 @@ document.addEventListener("DOMContentLoaded", function() {
         submitButton.textContent = 'Add Workout'
         submitButton.addEventListener('click', () => addWorkout(dayData, nameInput, weightInput, repsInput, setsInput))
 
-        //Button for user to select a workout from the API instead
         const chooseWorkoutButton = document.createElement('button')
         chooseWorkoutButton.type = 'button'
-        chooseWorkoutButton.textContent = "Choose a Workout";
+        chooseWorkoutButton.textContent = 'Choose a Workout'
+        chooseWorkoutButton.addEventListener('click', ()=> chooseWorkoutForm(dayData))
         
         form.appendChild(nameInput)
         form.appendChild(weightInput)
@@ -427,12 +427,81 @@ document.addEventListener("DOMContentLoaded", function() {
         form.style.display = form.style.display === 'none' ? 'block' : 'none'
       }
 
-      //Function to make a workout form with data from the workout API
-      //When chooseWorkoutsButton is chosen, toggle to hide the form to add own workout
-      //Categories populated from API: abdominals, biceps, chest, Lower Back (lower_back)
-      //When a user selects a category, populate workout options for that category
-      //User selects a workout and clicks add workout and it adds workout to data table with default weight, reps and sets values
-      //Toggles away the add workout fields
+    function chooseWorkoutForm(dayData) {
+        const muscleDropdown = document.createElement('select');
+        muscleDropdown.id = 'muscleDropdown';
+    
+        const muscleGroups = ['Abdominals', 'Biceps', 'Chest', 'Lower Back'];
+    
+        muscleGroups.forEach((muscle) => {
+            const option = document.createElement('option');
+            option.value = muscle.toLowerCase().replace(' ', '_');
+            option.text = muscle;
+            muscleDropdown.appendChild(option);
+        });
+    
+        const submitButton = document.createElement('button');
+        submitButton.type = 'button';
+        submitButton.id = 'submitWorkout'
+        submitButton.textContent = 'Find Workouts';
+        submitButton.addEventListener('click', () => getExercises(dayData));
+    
+        const workoutTablesContainer = document.getElementById('workoutTables');
+        workoutTablesContainer.appendChild(muscleDropdown);
+        workoutTablesContainer.appendChild(submitButton);
+    }
+    async function getExercises(dayData) {
+        const selectedMuscle = document.getElementById('muscleDropdown').value;
+    
+        try {
+            const response = await fetch(`/exercises?muscle=${selectedMuscle}`);
+            const data = await response.json();
+    
+            console.log("Exercise Data:", data);
+
+            const workoutTablesContainer = document.getElementById('workoutTables')
+
+            const workoutContainer = document.createElement('div')
+            workoutContainer.id = 'workoutContainer'
+
+            data.forEach((exercise) => {
+                const exerciseOption = document.createElement('div')
+                exerciseOption.classList.add('workout-item')
+
+                exerciseOption.textContent = `${exercise.name} - ${exercise.instructions}`
+
+                exerciseOption.addEventListener('click', ()=> addSelectedWorkout(exercise, dayData))
+
+                workoutContainer.appendChild(exerciseOption)
+            })
+
+                workoutTablesContainer.appendChild(workoutContainer)
+
+            } catch (error) {
+                console.error(`Error: ${error}`);
+                // Handle error, e.g., display an error message to the user
+            }
+        }
+
+        function addSelectedWorkout(workout, dayData) {
+            const defaultValues = { weight: 0, reps: 0, sets: 0 };
+        
+            // Assuming dayData is accessible in the scope
+            const newWorkout = {
+                exercise: workout.name,
+                ...defaultValues,
+            };
+        
+            dayData.exercises.push(newWorkout);
+        
+            updateServer(dayData);
+        
+            const workoutTablesContainer = document.getElementById('workoutTables');
+            const card = document.querySelector(`[data-day="${dayData.day}"]`);
+            const oldTable = card.querySelector('.workout-table');
+            const newTable = createTable(dayData);
+            oldTable.replaceWith(newTable);
+        }
 });
 
 //Function to PUT changes from client side to server side
@@ -451,17 +520,3 @@ function updateServer(dayData) {
         console.error('Error updating workout on server:', error);
       });
   }
-
-//Function to fetch exercises from exercise API
-async function fetchExercises(muscle) {
-    try {
-        const response = await fetch(`/exercises?muscle=${muscle}`)
-        const data = await response.json()
-
-        console.log("Exercises:", data)
-    } catch(error) {
-        console.error("Error fetching exercises:", error)
-    }
-}
-
-fetchExercises("abdominals")

@@ -399,29 +399,33 @@ document.addEventListener("DOMContentLoaded", function() {
         const weight = parseInt(weightInput.value, 10);
         const reps = parseInt(repsInput.value, 10);
         const sets = parseInt(setsInput.value, 10);
-
+    
         if (workoutName && !isNaN(weight) && !isNaN(reps) && !isNaN(sets)) {
             const newWorkout = {
                 exercise: workoutName,
                 weight: weight,
                 reps: reps,
                 sets: sets,
-            }
-
-            dayData.exercises.push(newWorkout)
-
-            updateServer(dayData)
-
+            };
+    
+            dayData.exercises.push(newWorkout);
+    
+            updateServer(dayData);
+    
             // Re-render the exercises table on the UI
             const workoutTablesContainer = document.getElementById('workoutTables');
             const card = document.querySelector(`[data-day="${dayData.day}"]`);
             const oldTable = card.querySelector('.workout-table');
             const newTable = createTable(dayData);
             oldTable.replaceWith(newTable);
+    
+            // Toggle away the addWorkoutForm
+            const addWorkoutForm = card.querySelector('.add-workout-form');
+            toggleWorkoutForm(addWorkoutForm);
         } else {
-            alert('Invalid Workout Data. Please Try Again.')
+            alert('Invalid Workout Data. Please Try Again.');
         }
-      }
+    }
 
       function toggleWorkoutForm(form) {
         form.style.display = form.style.display === 'none' ? 'block' : 'none'
@@ -452,56 +456,85 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     async function getExercises(dayData) {
         const selectedMuscle = document.getElementById('muscleDropdown').value;
+        const workoutTablesContainer = document.getElementById('workoutTables');
+        
+        // Remove existing workout options
+        const existingWorkoutContainer = document.getElementById('workoutContainer');
+        if (existingWorkoutContainer) {
+            workoutTablesContainer.removeChild(existingWorkoutContainer);
+        }
     
         try {
             const response = await fetch(`/exercises?muscle=${selectedMuscle}`);
             const data = await response.json();
     
             console.log("Exercise Data:", data);
-
-            const workoutTablesContainer = document.getElementById('workoutTables')
-
-            const workoutContainer = document.createElement('div')
-            workoutContainer.id = 'workoutContainer'
-
+    
+            const workoutContainer = document.createElement('div');
+            workoutContainer.id = 'workoutContainer';
+    
             data.forEach((exercise) => {
-                const exerciseOption = document.createElement('div')
-                exerciseOption.classList.add('workout-item')
-
-                exerciseOption.textContent = `${exercise.name} - ${exercise.instructions}`
-
-                exerciseOption.addEventListener('click', ()=> addSelectedWorkout(exercise, dayData))
-
-                workoutContainer.appendChild(exerciseOption)
-            })
-
-                workoutTablesContainer.appendChild(workoutContainer)
-
-            } catch (error) {
-                console.error(`Error: ${error}`);
-                // Handle error, e.g., display an error message to the user
-            }
+                const exerciseOption = document.createElement('div');
+                exerciseOption.classList.add('workout-item');
+    
+                exerciseOption.textContent = `${exercise.name} - ${exercise.instructions}`;
+    
+                exerciseOption.addEventListener('click', () => addSelectedWorkout(exercise, dayData));
+    
+                workoutContainer.appendChild(exerciseOption);
+            });
+    
+            workoutTablesContainer.appendChild(workoutContainer);
+    
+        } catch (error) {
+            console.error(`Error: ${error}`);
+            // Handle error, e.g., display an error message to the user
         }
+    }
 
-        function addSelectedWorkout(workout, dayData) {
-            const defaultValues = { weight: 0, reps: 0, sets: 0 };
-        
-            // Assuming dayData is accessible in the scope
-            const newWorkout = {
-                exercise: workout.name,
-                ...defaultValues,
-            };
-        
-            dayData.exercises.push(newWorkout);
-        
-            updateServer(dayData);
-        
-            const workoutTablesContainer = document.getElementById('workoutTables');
-            const card = document.querySelector(`[data-day="${dayData.day}"]`);
-            const oldTable = card.querySelector('.workout-table');
-            const newTable = createTable(dayData);
-            oldTable.replaceWith(newTable);
+    //Adds workout to user's data
+    function addSelectedWorkout(workout, dayData) {
+        const defaultValues = { weight: 0, reps: 0, sets: 0 };
+    
+        // Assuming dayData is accessible in the scope
+        const newWorkout = {
+            exercise: workout.name,
+            ...defaultValues,
+        };
+    
+        dayData.exercises.push(newWorkout);
+    
+        updateServer(dayData);
+    
+        const workoutTablesContainer = document.getElementById('workoutTables');
+        const card = document.querySelector(`[data-day="${dayData.day}"]`);
+        const oldTable = card.querySelector('.workout-table');
+        const newTable = createTable(dayData);
+        oldTable.replaceWith(newTable);
+    
+        // Remove the workout data after a user has selected their workout
+        const workoutContainer = workoutTablesContainer.querySelector('#workoutContainer');
+        const muscleDropdown = workoutTablesContainer.querySelector('#muscleDropdown');
+    
+        if (workoutContainer) {
+            workoutContainer.remove();
         }
+    
+        if (muscleDropdown) {
+            muscleDropdown.remove();
+        }
+    
+        // Toggle away the addWorkoutForm
+        const addWorkoutForm = card.querySelector('.add-workout-form');
+        toggleWorkoutForm(addWorkoutForm);
+    
+        // Toggle away the "Find Workouts" button
+        const findWorkoutsButton = workoutTablesContainer.querySelector('#submitWorkout');
+        
+        if (findWorkoutsButton) {
+            findWorkoutsButton.remove();
+        }
+    }
 });
 
 //Function to PUT changes from client side to server side

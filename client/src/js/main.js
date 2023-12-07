@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const thead = document.createElement("thead");
         const headerRow = document.createElement('tr');
-        ['Workout', 'Weight', 'Reps', 'Sets'].forEach((headerText) => {
+        ['Workout', 'Weight', 'Reps', 'Sets', ''].forEach((headerText) => {
             const th = document.createElement('th');
             th.textContent = headerText;
             headerRow.appendChild(th)
@@ -143,6 +143,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 td.addEventListener('click', () => handleCellEdit(td, dayData, rowIndex, colIndex));
                 row.appendChild(td)
             });
+            //adding delete button for each workout
+            const deleteButtonCell = document.createElement('td')
+            const deleteButton = createButton('deleteWorkout', 'times')
+            deleteButton.addEventListener('click', ()=> deleteWorkout(dayData, rowIndex))
+            deleteButtonCell.appendChild(deleteButton)
+            row.appendChild(deleteButton)
             tbody.appendChild(row)
         });
         table.appendChild(tbody)
@@ -209,6 +215,25 @@ document.addEventListener("DOMContentLoaded", function() {
             metaKey
         );
     }
+
+    // Function to handle the deletion of a workout
+    function deleteWorkout(dayData, rowIndex) {
+    const confirmation = confirm("Are you sure you want to delete this workout?");
+    if (confirmation) {
+        // Remove the workout from the exercises array
+        dayData.exercises.splice(rowIndex, 1);
+
+        // Update the server with the modified dayData
+        updateServer(dayData);
+
+        // Re-render the exercises table on the UI
+        const workoutTablesContainer = document.getElementById('workoutTables');
+        const card = document.querySelector(`[data-day="${dayData.day}"]`);
+        const oldTable = card.querySelector('.workout-table');
+        const newTable = createTable(dayData);
+        oldTable.replaceWith(newTable);
+    }
+}
 
     //Function to create buttons for the cards
     function createButton(className, iconClass) {
@@ -553,3 +578,5 @@ function updateServer(dayData) {
         console.error('Error updating workout on server:', error);
       });
   }
+
+  //TODO: Need to have a dedicated DELETE ENDPOINT for application and adjust functions accordingly

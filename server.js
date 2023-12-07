@@ -167,3 +167,5 @@ app.get('/exercises', async(req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
+
+  //TODO: Need to have a dedicated DELETE ENDPOINT for application

@@ -579,4 +579,4 @@ function updateServer(dayData) {
       });
   }
 
-  //TODO: Need to have a dedicated DELETE ENDPOINT for application and adjust functions accordingly
+  //TODO: Need to have a dedicated DELETE ENDPOINT for application and adjust code

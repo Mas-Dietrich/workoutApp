@@ -164,21 +164,67 @@ app.get('/exercises', async(req, res) => {
     }
 })
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
-
-//Route for deleting workout data for a specific day
-app.delete('/workouts/:day', (req, res) => {
+// Route for deleting a specific workout for a specific day
+app.delete('/workouts/:day/:index', (req, res) => {
     const day = req.params.day.toLowerCase();
+    const index = parseInt(req.params.index);
 
-    const dayIndex = workouts.findIndex((workout) => workout.day === day)
+    const dayIndex = workouts.findIndex((workout) => workout.day === day);
 
     if (dayIndex !== -1) {
-        workouts.splice(dayIndex, 1)
+        // Check if the index is within the valid range
+        if (index >= 0 && index < workouts[dayIndex].exercises.length) {
+            // Remove the workout at the specified index
+            workouts[dayIndex].exercises.splice(index, 1);
 
-        res.json({success: true, message: `Workout for ${day} deleted`})
+            res.json({ success: true, message: `Workout deleted for ${day}` });
+        } else {
+            res.status(400).json({ success: false, message: 'Invalid workout index' });
+        }
     } else {
-        res.status(404).json({success: false, message: `Workout for ${day} not deleted`})
+        res.status(404).json({ success: false, message: `Workout for ${day} not found.` });
     }
-})
+});
+
+// Route for adding a new workout for a specific day
+app.post('/workouts/:day', (req, res) => {
+    const day = req.params.day.toLowerCase();
+    const { exercise, weight, reps, sets } = req.body;
+
+    const dayIndex = workouts.findIndex((workout) => workout.day === day);
+
+    if (dayIndex !== -1) {
+        // Add the new exercise to the exercises array
+        workouts[dayIndex].exercises.push({
+            exercise,
+            weight,
+            reps,
+            sets,
+        });
+
+        res.json({ success: true, message: `Workout added for ${day}` });
+    } else {
+        res.status(404).json({ success: false, message: `Workout for ${day} not found.` });
+    }
+});
+
+//Route for saving notes
+app.post('/workouts/:day/notes', (req, res) => {
+    const day = req.params.day.toLowerCase();
+    const newNotes = req.body.notes;
+  
+    const dayIndex = workouts.findIndex((workout) => workout.day === day);
+  
+    if (dayIndex !== -1) {
+      // Update workout notes for the specified day
+      workouts[dayIndex].notes = newNotes;
+  
+      res.json({ success: true, message: `Workout notes saved for ${day}` });
+    } else {
+      res.status(404).json({ success: false, message: `Workout for ${day} not found.` });
+    }
+  });
+
+app.listen(port, () => {
+    console.log(`Example app listening on port ${port}`);
+  });

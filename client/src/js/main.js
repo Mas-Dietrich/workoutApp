@@ -255,22 +255,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Function to handle the deletion of a workout
   function deleteWorkout(dayData, rowIndex) {
-    const confirmation = confirm(
-      "Are you sure you want to delete this workout?"
-    );
+    const confirmation = confirm('Are you sure you want to delete this workout?');
     if (confirmation) {
-      // Remove the workout from the exercises array
-      dayData.exercises.splice(rowIndex, 1);
-
-      // Update the server with the modified dayData
-      updateServer(dayData);
-
-      // Re-render the exercises table on the UI
-      const workoutTablesContainer = document.getElementById("workoutTables");
-      const card = document.querySelector(`[data-day="${dayData.day}"]`);
-      const oldTable = card.querySelector(".workout-table");
-      const newTable = createTable(dayData);
-      oldTable.replaceWith(newTable);
+      // Send a DELETE request to remove the workout
+      fetch(`/workouts/${dayData.day}/${rowIndex}`, {
+        method: 'DELETE',
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data.message);
+  
+          // Update the local workouts array
+          workouts = data.exercise;
+  
+          // Re-render the exercises table on the UI
+          updateWorkoutTables();
+        })
+        .catch((error) => {
+          console.error('Error deleting workout:', error);
+        });
     }
   }
 
@@ -310,22 +313,42 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   //Function so user can saves notes for their workout
-  function saveNotes(notes, dayData, notesList) {
-    // Ensure dayData.notes is an array, and concatenate new notes to existing notes
-    dayData.notes = (dayData.notes || []).concat(notes.split("\n"));
+function saveNotes(notes, dayData, notesList) {
+  // Ensure dayData.notes is an array, and concatenate new notes to existing notes
+  dayData.notes = (dayData.notes || []).concat(notes.split("\n"));
 
-    // Remove any empty strings from the notes array
-    dayData.notes = dayData.notes.filter((note) => note.trim() !== "");
+  // Remove any empty strings from the notes array
+  dayData.notes = dayData.notes.filter((note) => note.trim() !== "");
 
-    // Update the server with the modified dayData
-    updateServer(dayData);
+  // Update the server with the modified dayData
+  updateServer(dayData);
 
-    // Update the notes list on the UI
-    updateNotesList(notesList, dayData);
+  // Update the notes list on the UI
+  updateNotesList(notesList, dayData);
 
-    const workoutNotes = document.getElementById("notes");
-    workoutNotes.value = "";
-  }
+  const workoutNotes = document.getElementById("notes");
+  workoutNotes.value = ""; // Clear the textarea after saving notes
+}
+
+// Function to update the bullet list
+function updateNotesList(list, dayData) {
+  list.innerHTML = "";
+
+  dayData.notes.forEach((note, index) => {
+    const listItem = document.createElement("li");
+
+    const editNoteButton = createButton("editNote", "edit");
+    editNoteButton.addEventListener("click", () => editNotes(dayData, index));
+
+    const deleteButton = createButton("deleteNote", "trash-alt");
+    deleteButton.addEventListener("click", () => deleteNotes(dayData, index));
+
+    listItem.textContent = note;
+    listItem.appendChild(editNoteButton);
+    listItem.appendChild(deleteButton);
+    list.appendChild(listItem);
+  });
+}
 
   //Function for updating bullet list
   function updateNotesList(list, dayData) {
@@ -464,13 +487,14 @@ document.addEventListener("DOMContentLoaded", function () {
     return form;
   }
 
-  //Function to add manually added workouts to data table
-  function addWorkout(dayData, nameInput, weightInput, repsInput, setsInput) {
+  //Function to add/POST manually added workouts to data table
+//Function to add/POST manually added workouts to data table
+function addWorkout(dayData, nameInput, weightInput, repsInput, setsInput) {
     const workoutName = nameInput.value.trim();
     const weight = parseInt(weightInput.value, 10);
     const reps = parseInt(repsInput.value, 10);
     const sets = parseInt(setsInput.value, 10);
-
+  
     if (workoutName && !isNaN(weight) && !isNaN(reps) && !isNaN(sets)) {
       const newWorkout = {
         exercise: workoutName,
@@ -478,23 +502,35 @@ document.addEventListener("DOMContentLoaded", function () {
         reps: reps,
         sets: sets,
       };
-
-      dayData.exercises.push(newWorkout);
-
-      updateServer(dayData);
-
-      // Re-render the exercises table on the UI
-      const workoutTablesContainer = document.getElementById("workoutTables");
-      const card = document.querySelector(`[data-day="${dayData.day}"]`);
-      const oldTable = card.querySelector(".workout-table");
-      const newTable = createTable(dayData);
-      oldTable.replaceWith(newTable);
-
-      // Toggle away the addWorkoutForm
-      const addWorkoutForm = card.querySelector(".add-workout-form");
-      toggleWorkoutForm(addWorkoutForm);
+  
+      // Send a POST request to add the new workout
+      fetch(`/workouts/${dayData.day}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newWorkout),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data.message);
+  
+          // Update the local workouts array
+          workouts = data.workouts;
+  
+          // Re-render the exercises table on the UI
+          updateWorkoutTables();
+  
+          // Toggle away the addWorkoutForm
+          const card = document.querySelector(`[data-day="${dayData.day}"]`);
+          const addWorkoutForm = card.querySelector('.add-workout-form');
+          toggleWorkoutForm(addWorkoutForm);
+        })
+        .catch((error) => {
+          console.error('Error adding workout:', error);
+        });
     } else {
-      alert("Invalid Workout Data. Please Try Again.");
+      alert('Invalid Workout Data. Please Try Again.');
     }
   }
 
@@ -506,9 +542,6 @@ document.addEventListener("DOMContentLoaded", function () {
   //Function for adding workouts from API
   function chooseWorkoutForm(dayData) {
     const chooseWorkoutContainer = document.getElementById('chooseWorkoutContainer');
-
-    /* // Clear existing content in chooseWorkoutContainer
-    chooseWorkoutContainer.innerHTML = ''; */
 
     const muscleDropdown = document.createElement('select');
     muscleDropdown.id = 'muscleDropdown';
@@ -615,6 +648,41 @@ document.addEventListener("DOMContentLoaded", function () {
       findWorkoutsButton.style.display = 'none';
     }
   }
+
+    // Function to update workout tables with the latest data
+    function updateWorkoutTables() {
+        const workoutTablesContainer = document.getElementById('workoutTables');
+    
+        // Clear existing tables
+        workoutTablesContainer.innerHTML = '';
+    
+        // Fetch the latest workout data and re-render the tables
+        fetch('/workouts')
+        .then((response) => response.json())
+        .then((data) => {
+            const workouts = data;
+    
+            workouts.forEach((dayData) => {
+            const card = createCard(dayData);
+            workoutTablesContainer.appendChild(card);
+    
+            // Toggle completed status for completed workout days
+            if (dayData.completed) {
+                card.classList.add('completed');
+            }
+    
+            // Toggle rest day status on workout days
+            if (dayData.rest) {
+                card.classList.add('rest');
+            }
+            });
+    
+            completedWorkoutsCount(); // Update completed workouts count if needed
+        })
+        .catch((error) => {
+            console.error('Error fetching workout data:', error);
+        });
+    }
 });
 
 //Function to PUT changes from client side to server side
@@ -634,5 +702,3 @@ function updateServer(dayData) {
     });
 }
 
-//TODO: Need to have a dedicated DELETE ENDPOINT for application to remove workout days
-//TODO: Need to have a dedicated POST Endpoint for application where users can post new workout data

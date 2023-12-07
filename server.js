@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
@@ -167,3 +167,18 @@ app.get('/exercises', async(req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
+
+//Route for deleting workout data for a specific day
+app.delete('/workouts/:day', (req, res) => {
+    const day = req.params.day.toLowerCase();
+
+    const dayIndex = workouts.findIndex((workout) => workout.day === day)
+
+    if (dayIndex !== -1) {
+        workouts.splice(dayIndex, 1)
+
+        res.json({success: true, message: `Workout for ${day} deleted`})
+    } else {
+        res.status(404).json({success: false, message: `Workout for ${day} not deleted`})
+    }
+})

@@ -26,8 +26,8 @@ API Endpoints
 2. app.get('/workouts') for user workout data
 3. app.get('/exercises') for exercises from external API
 ### POST
-1. app.put('/workouts/:day') is utilized to post new workout data whenever the app is updated by users
+1. app.put('/workouts/:day') is utilized to post new workouts data whenever the app is updated by users
 ### PUT
 1. app.put('/workouts/:day') for updating workout data for a specific day of the week
 ### DELETE
-1. app.delete('/workouts/:day') is used to delete individual workouts
+1. app.delete('/workouts/:day') is used to delete workouts as a whole from the server

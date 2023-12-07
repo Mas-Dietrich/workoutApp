@@ -310,6 +310,7 @@ document.addEventListener("DOMContentLoaded", function () {
     completedWorkoutsCount();
 
     card.classList.toggle("completed", dayData.completed);
+    checkAllWorkoutsCompleted();
   }
 
   //Function so user can saves notes for their workout
@@ -683,6 +684,15 @@ function addWorkout(dayData, nameInput, weightInput, repsInput, setsInput) {
             console.error('Error fetching workout data:', error);
         });
     }
+
+      // Check if all workouts are completed and show a congratulations message
+    function checkAllWorkoutsCompleted() {
+    const allCompleted = workouts.every((day) => day.completed);
+
+    if (allCompleted) {
+      alert("Congratulations! You completed all of your workouts!")
+    } 
+  }
 });
 
 //Function to PUT changes from client side to server side

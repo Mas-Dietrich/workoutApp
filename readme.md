@@ -17,6 +17,7 @@ User Stories:
 13. Users can edit any details about an individual workout they want
 14. Users can manually add their own workouts to a workout plan
 15. Users have a dynamically updating indicator stating how many workouts out of 7 have been accomplished
+16. When selecting an exercise, users can click a learn more button to have an exercises instructions shared to them from the API.
 
 API Endpoints
 =====
@@ -26,8 +27,9 @@ API Endpoints
 2. app.get('/workouts') for user workout data
 3. app.get('/exercises') for exercises from external API
 ### POST
-1. app.put('/workouts/:day') is utilized to post new workouts data whenever the app is updated by users
+1. app.post('/workouts/:day') for adding a new workout for a specific day
+2. app.post('/workouts/:day/notes') for adding new notes for a specific day's workout
 ### PUT
 1. app.put('/workouts/:day') for updating workout data for a specific day of the week
 ### DELETE
-1. app.delete('/workouts/:day') is used to delete workouts as a whole from the server
+1. app.delete('/workouts/:day/:index') for deleting a specific workout for a specific day

@@ -18,10 +18,10 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 // Display Inspirational Quote in the banner end
 
+let workouts;
+
 //Dynamically display workout data from server.js
 document.addEventListener("DOMContentLoaded", function () {
-  let workouts;
-
   const workoutTablesContainer = document.getElementById("workoutTables");
   const completedWorkoutsTracker = document.getElementById("completedWorkouts");
   fetch("/workouts")
@@ -255,24 +255,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Function to handle the deletion of a workout
   function deleteWorkout(dayData, rowIndex) {
-    const confirmation = confirm('Are you sure you want to delete this workout?');
+    const confirmation = confirm(
+      "Are you sure you want to delete this workout?"
+    );
     if (confirmation) {
       // Send a DELETE request to remove the workout
       fetch(`/workouts/${dayData.day}/${rowIndex}`, {
-        method: 'DELETE',
+        method: "DELETE",
       })
         .then((response) => response.json())
         .then((data) => {
           console.log(data.message);
-  
+
           // Update the local workouts array
           workouts = data.exercise;
-  
+
           // Re-render the exercises table on the UI
           updateWorkoutTables();
         })
         .catch((error) => {
-          console.error('Error deleting workout:', error);
+          console.error("Error deleting workout:", error);
         });
     }
   }
@@ -314,44 +316,24 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   //Function so user can saves notes for their workout
-function saveNotes(notes, dayData, notesList) {
-  // Ensure dayData.notes is an array, and concatenate new notes to existing notes
-  dayData.notes = (dayData.notes || []).concat(notes.split("\n"));
+  function saveNotes(notes, dayData, notesList) {
+    // Ensure dayData.notes is an array, and concatenate new notes to existing notes
+    dayData.notes = (dayData.notes || []).concat(notes.split("\n"));
 
-  // Remove any empty strings from the notes array
-  dayData.notes = dayData.notes.filter((note) => note.trim() !== "");
+    // Remove any empty strings from the notes array
+    dayData.notes = dayData.notes.filter((note) => note.trim() !== "");
 
-  // Update the server with the modified dayData
-  updateServer(dayData);
+    // Update the server with the modified dayData
+    updateServer(dayData);
 
-  // Update the notes list on the UI
-  updateNotesList(notesList, dayData);
+    // Update the notes list on the UI
+    updateNotesList(notesList, dayData);
 
-  const workoutNotes = document.getElementById("notes");
-  workoutNotes.value = ""; // Clear the textarea after saving notes
-}
+    const workoutNotes = document.getElementById("notes");
+    workoutNotes.value = ""; // Clear the textarea after saving notes
+  }
 
-// Function to update the bullet list
-function updateNotesList(list, dayData) {
-  list.innerHTML = "";
-
-  dayData.notes.forEach((note, index) => {
-    const listItem = document.createElement("li");
-
-    const editNoteButton = createButton("editNote", "edit");
-    editNoteButton.addEventListener("click", () => editNotes(dayData, index));
-
-    const deleteButton = createButton("deleteNote", "trash-alt");
-    deleteButton.addEventListener("click", () => deleteNotes(dayData, index));
-
-    listItem.textContent = note;
-    listItem.appendChild(editNoteButton);
-    listItem.appendChild(deleteButton);
-    list.appendChild(listItem);
-  });
-}
-
-  //Function for updating bullet list
+  // Function to update the bullet list
   function updateNotesList(list, dayData) {
     list.innerHTML = "";
 
@@ -489,13 +471,13 @@ function updateNotesList(list, dayData) {
   }
 
   //Function to add/POST manually added workouts to data table
-//Function to add/POST manually added workouts to data table
-function addWorkout(dayData, nameInput, weightInput, repsInput, setsInput) {
+  //Function to add/POST manually added workouts to data table
+  function addWorkout(dayData, nameInput, weightInput, repsInput, setsInput) {
     const workoutName = nameInput.value.trim();
     const weight = parseInt(weightInput.value, 10);
     const reps = parseInt(repsInput.value, 10);
     const sets = parseInt(setsInput.value, 10);
-  
+
     if (workoutName && !isNaN(weight) && !isNaN(reps) && !isNaN(sets)) {
       const newWorkout = {
         exercise: workoutName,
@@ -503,35 +485,36 @@ function addWorkout(dayData, nameInput, weightInput, repsInput, setsInput) {
         reps: reps,
         sets: sets,
       };
-  
+
       // Send a POST request to add the new workout
       fetch(`/workouts/${dayData.day}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(newWorkout),
       })
         .then((response) => response.json())
         .then((data) => {
           console.log(data.message);
-  
+
           // Update the local workouts array
           workouts = data.workouts;
-  
+
           // Re-render the exercises table on the UI
           updateWorkoutTables();
-  
+          completedWorkoutsCount(); // Update completed workouts count if needed
+
           // Toggle away the addWorkoutForm
           const card = document.querySelector(`[data-day="${dayData.day}"]`);
-          const addWorkoutForm = card.querySelector('.add-workout-form');
+          const addWorkoutForm = card.querySelector(".add-workout-form");
           toggleWorkoutForm(addWorkoutForm);
         })
         .catch((error) => {
-          console.error('Error adding workout:', error);
+          console.error("Error adding workout:", error);
         });
     } else {
-      alert('Invalid Workout Data. Please Try Again.');
+      alert("Invalid Workout Data. Please Try Again.");
     }
   }
 
@@ -542,67 +525,87 @@ function addWorkout(dayData, nameInput, weightInput, repsInput, setsInput) {
 
   //Function for adding workouts from API
   function chooseWorkoutForm(dayData) {
-    const chooseWorkoutContainer = document.getElementById('chooseWorkoutContainer');
+    const chooseWorkoutContainer = document.getElementById(
+      "chooseWorkoutContainer"
+    );
 
-    const muscleDropdown = document.createElement('select');
-    muscleDropdown.id = 'muscleDropdown';
+    const muscleDropdown = document.createElement("select");
+    muscleDropdown.id = "muscleDropdown";
 
-    const muscleGroups = ['Abdominals', 'Biceps', 'Chest', 'Lower Back'];
+    const muscleGroups = ["Abdominals", "Biceps", "Chest", "Lower Back"];
 
     muscleGroups.forEach((muscle) => {
-        const option = document.createElement('option');
-        option.value = muscle.toLowerCase().replace(' ', '_');
-        option.text = muscle;
-        muscleDropdown.appendChild(option);
+      const option = document.createElement("option");
+      option.value = muscle.toLowerCase().replace(" ", "_");
+      option.text = muscle;
+      muscleDropdown.appendChild(option);
     });
 
-    const submitButton = document.createElement('button');
-    submitButton.type = 'button';
-    submitButton.id = 'submitWorkout'
-    submitButton.textContent = 'Find Workouts';
-    submitButton.addEventListener('click', () => getExercises(dayData, chooseWorkoutContainer));
+    const submitButton = document.createElement("button");
+    submitButton.type = "button";
+    submitButton.id = "submitWorkout";
+    submitButton.textContent = "Find Workouts";
+    submitButton.addEventListener("click", () =>
+      getExercises(dayData, chooseWorkoutContainer)
+    );
 
     chooseWorkoutContainer.appendChild(muscleDropdown);
     chooseWorkoutContainer.appendChild(submitButton);
-}
+  }
 
   //Gather exercises from API and display options with descriptions of exercises
   async function getExercises(dayData, chooseWorkoutContainer) {
-    const selectedMuscle = document.getElementById('muscleDropdown').value;
-    
+    const selectedMuscle = document.getElementById("muscleDropdown").value;
+
     // Remove existing workout options
-    const existingWorkoutContainer = document.getElementById('workoutContainer');
+    const existingWorkoutContainer =
+      document.getElementById("workoutContainer");
     if (existingWorkoutContainer) {
-        chooseWorkoutContainer.removeChild(existingWorkoutContainer);
+      chooseWorkoutContainer.removeChild(existingWorkoutContainer);
     }
 
     try {
-        const response = await fetch(`/exercises?muscle=${selectedMuscle}`);
-        const data = await response.json();
+      const response = await fetch(`/exercises?muscle=${selectedMuscle}`);
+      const data = await response.json();
 
-        console.log("Exercise Data:", data);
+      console.log("Exercise Data:", data);
 
-        const workoutContainer = document.createElement('div');
-        workoutContainer.id = 'workoutContainer';
+      const workoutContainer = document.createElement("div");
+      workoutContainer.id = "workoutContainer";
 
-        data.forEach((exercise) => {
-            const exerciseOption = document.createElement('div');
-            exerciseOption.classList.add('workout-item');
+      data.forEach((exercise) => {
+        const exerciseOption = document.createElement("div");
+        exerciseOption.classList.add("workout-item");
 
-            exerciseOption.textContent = `${exercise.name} - ${exercise.instructions}`;
+        const exerciseName = document.createElement("h3");
+        exerciseName.textContent = exercise.name;
 
-            exerciseOption.addEventListener('click', () => addSelectedWorkout(exercise, dayData));
-
-            workoutContainer.appendChild(exerciseOption);
+        const learnMoreButton = createButton("learnMore", "info");
+        learnMoreButton.textContent = "Learn More";
+        learnMoreButton.addEventListener("click", () => {
+          alert(
+            `How to do the ${exercise.name} exercise: \n\n ${exercise.instructions}`
+          );
         });
 
-        chooseWorkoutContainer.appendChild(workoutContainer);
+        const addWorkoutButton = createButton("addWorkout", "plus");
+        addWorkoutButton.textContent = "Add Workout";
+        addWorkoutButton.addEventListener("click", () =>
+          addSelectedWorkout(exercise, dayData)
+        );
 
+        exerciseOption.appendChild(exerciseName);
+        exerciseOption.appendChild(learnMoreButton);
+        exerciseOption.appendChild(addWorkoutButton);
+        workoutContainer.appendChild(exerciseOption);
+      });
+
+      chooseWorkoutContainer.appendChild(workoutContainer);
     } catch (error) {
-        console.error(`Error: ${error}`);
-        // Handle error, e.g., display an error message to the user
+      console.error(`Error: ${error}`);
+      // Handle error, e.g., display an error message to the user
     }
-}
+  }
 
   //Adds workout to user's data
   function addSelectedWorkout(workout, dayData) {
@@ -622,19 +625,18 @@ function addWorkout(dayData, nameInput, weightInput, repsInput, setsInput) {
     const oldTable = card.querySelector(".workout-table");
     const newTable = createTable(dayData);
     oldTable.replaceWith(newTable);
+    completedWorkoutsCount(); // Update completed workouts count if needed
 
     // Remove the workout data after a user has selected their workout
-    const workoutContainer =
-      document.querySelector("#chooseWorkoutContainer");
-    const muscleDropdown =
-      document.querySelector("#muscleDropdown");
+    const workoutContainer = document.querySelector("#chooseWorkoutContainer");
+    const muscleDropdown = document.querySelector("#muscleDropdown");
 
     if (workoutContainer) {
-      workoutContainer.style.display= 'none';
+      workoutContainer.style.display = "none";
     }
 
     if (muscleDropdown) {
-      muscleDropdown.style.display = 'none';
+      muscleDropdown.style.display = "none";
     }
 
     // Toggle away the addWorkoutForm
@@ -646,52 +648,52 @@ function addWorkout(dayData, nameInput, weightInput, repsInput, setsInput) {
       workoutTablesContainer.querySelector("#submitWorkout");
 
     if (findWorkoutsButton) {
-      findWorkoutsButton.style.display = 'none';
+      findWorkoutsButton.style.display = "none";
     }
   }
 
-    // Function to update workout tables with the latest data
-    function updateWorkoutTables() {
-        const workoutTablesContainer = document.getElementById('workoutTables');
-    
-        // Clear existing tables
-        workoutTablesContainer.innerHTML = '';
-    
-        // Fetch the latest workout data and re-render the tables
-        fetch('/workouts')
-        .then((response) => response.json())
-        .then((data) => {
-            const workouts = data;
-    
-            workouts.forEach((dayData) => {
-            const card = createCard(dayData);
-            workoutTablesContainer.appendChild(card);
-    
-            // Toggle completed status for completed workout days
-            if (dayData.completed) {
-                card.classList.add('completed');
-            }
-    
-            // Toggle rest day status on workout days
-            if (dayData.rest) {
-                card.classList.add('rest');
-            }
-            });
-    
-            completedWorkoutsCount(); // Update completed workouts count if needed
-        })
-        .catch((error) => {
-            console.error('Error fetching workout data:', error);
-        });
-    }
+  // Function to update workout tables with the latest data
+  function updateWorkoutTables() {
+    const workoutTablesContainer = document.getElementById("workoutTables");
 
-      // Check if all workouts are completed and show a congratulations message
-    function checkAllWorkoutsCompleted() {
+    // Clear existing tables
+    workoutTablesContainer.innerHTML = "";
+
+    // Fetch the latest workout data and re-render the tables
+    fetch("/workouts")
+      .then((response) => response.json())
+      .then((data) => {
+        const workouts = data;
+
+        workouts.forEach((dayData) => {
+          const card = createCard(dayData);
+          workoutTablesContainer.appendChild(card);
+
+          // Toggle completed status for completed workout days
+          if (dayData.completed) {
+            card.classList.add("completed");
+          }
+
+          // Toggle rest day status on workout days
+          if (dayData.rest) {
+            card.classList.add("rest");
+          }
+        });
+
+        completedWorkoutsCount(); // Update completed workouts count if needed
+      })
+      .catch((error) => {
+        console.error("Error fetching workout data:", error);
+      });
+  }
+
+  // Check if all workouts are completed and show a congratulations message
+  function checkAllWorkoutsCompleted() {
     const allCompleted = workouts.every((day) => day.completed);
 
     if (allCompleted) {
-      alert("Congratulations! You completed all of your workouts!")
-    } 
+      alert("Congratulations! You completed all of your workouts!");
+    }
   }
 });
 
@@ -711,4 +713,3 @@ function updateServer(dayData) {
       console.error("Error updating workout on server:", error);
     });
 }
-

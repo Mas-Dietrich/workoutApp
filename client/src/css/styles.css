@@ -176,9 +176,18 @@ footer {
 }
 
 /* Style for the muscle dropdown and submit button */
+
+#chooseWorkoutContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 #muscleDropdown,
 #submitWorkout {
   margin-top: 20px;
+  margin-right: 10px;
+  margin-left: 10px;
   padding: 10px;
   font-size: 16px;
   border: none;
@@ -194,11 +203,6 @@ footer {
   background-color: #2c2c2c;
   color: #ffffff;
   width: 200px;
-}
-
-/* Position the form underneath workout cards */
-#workoutTables {
-  position: relative;
 }
 
 #addWorkoutForm {
@@ -226,13 +230,37 @@ footer {
 }
 
 .workout-item {
-  padding: 10px;
-  border: 1px solid #2c2c2c;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease-in-out;
-}
-
-.workout-item:hover {
-  background-color: #333;
-}
+    padding: 10px;
+    border: 1px solid #2c2c2c;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+    display: flex;
+    align-items: center;
+  }
+  
+  .workout-item:hover {
+    background-color: #333;
+  }
+  
+  .workout-item button {
+    margin-top: 8px;
+    margin-right: 10px;
+    margin-left: 10px;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    color: #ffffff;
+    background-color: #3498db;
+    transition: background-color 0.3s ease-in-out;
+  }
+  
+  .workout-item button:hover {
+    background-color: #2980b9;
+  }
+  
+  .workout-item button:active {
+    background-color: #216795;
+  }
